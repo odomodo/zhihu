@@ -1,56 +1,592 @@
 <template>
-  <div>
-    {{qwe}}
+  <div class="wrap" v-if="list.length > 0">
+    <div class="list" v-for="(v, i) in list" :key="i">
+      <div>
+        <div class="title">
+          <a
+          :href="`https://www.zhihu.com/question/${v.target.question?.id}/answer/${v.target.id}`"
+          target="_blank"
+          >
+            <h2>{{ v.target.title || v.target.question.title}}</h2>
+          </a>
+        </div>
+        <div class="content">
+          <span>{{v.target.author.name}} :</span>
+          <span v-if="!v.isShowMore">
+            <span v-html="v.target.excerpt"></span>
+            <button type="button" @click="showMore(i)">阅读全文</button>
+          </span>
+          <span v-html="v.target.content" v-else></span>
+        </div>
+        <div class="ContentItem-actions">
+          <span>
+            <button aria-label="赞同 3193 " type="button" class="Button VoteButton VoteButton--up">
+              <span style="display: inline-flex; align-items: center;">
+                ​
+                <svg
+                  class="Zi Zi--TriangleUp VoteButton-TriangleUp"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                  width="10"
+                  height="10"
+                >
+                  <path
+                    d="M2 18.242c0-.326.088-.532.237-.896l7.98-13.203C10.572 3.57 11.086 3 12 3c.915 0 1.429.571 1.784 1.143l7.98 13.203c.15.364.236.57.236.896 0 1.386-.875 1.9-1.955 1.9H3.955c-1.08 0-1.955-.517-1.955-1.9z"
+                    fill-rule="evenodd"
+                  />
+                </svg>
+              </span>
+              赞同 {{v.target.voteup_count}}
+            </button>
+            <button aria-label="反对" type="button" class="Button VoteButton VoteButton--down">
+              <span style="display: inline-flex; align-items: center;">
+                ​
+                <svg
+                  class="Zi Zi--TriangleDown"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                  width="10"
+                  height="10"
+                >
+                  <path
+                    d="M20.044 3H3.956C2.876 3 2 3.517 2 4.9c0 .326.087.533.236.896L10.216 19c.355.571.87 1.143 1.784 1.143s1.429-.572 1.784-1.143l7.98-13.204c.149-.363.236-.57.236-.896 0-1.386-.876-1.9-1.956-1.9z"
+                    fill-rule="evenodd"
+                  />
+                </svg>
+              </span>
+            </button>
+          </span>
+          <button
+            type="button"
+            class="Button ContentItem-action Button--plain Button--withIcon Button--withLabel"
+            @click="showComment(v.target.id)"
+          >
+            <span style="display: inline-flex; align-items: center;">
+              ​
+              <svg
+                class="Zi Zi--Comment Button-zi"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+                width="1.2em"
+                height="1.2em"
+              >
+                <path
+                  d="M10.241 19.313a.97.97 0 0 0-.77.2 7.908 7.908 0 0 1-3.772 1.482.409.409 0 0 1-.38-.637 5.825 5.825 0 0 0 1.11-2.237.605.605 0 0 0-.227-.59A7.935 7.935 0 0 1 3 11.25C3 6.7 7.03 3 12 3s9 3.7 9 8.25-4.373 9.108-10.759 8.063z"
+                  fill-rule="evenodd"
+                />
+              </svg>
+            </span>
+            {{v.target.comment_count}} 条评论
+          </button>
+          <button
+            type="button"
+            class="Button ContentItem-action Button--plain Button--withIcon Button--withLabel"
+          >
+            <span style="display: inline-flex; align-items: center;">
+              ​
+              <svg
+                class="Zi Zi--Star Button-zi"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+                width="1.2em"
+                height="1.2em"
+              >
+                <path
+                  d="M5.515 19.64l.918-5.355-3.89-3.792c-.926-.902-.639-1.784.64-1.97L8.56 7.74l2.404-4.871c.572-1.16 1.5-1.16 2.072 0L15.44 7.74l5.377.782c1.28.186 1.566 1.068.64 1.97l-3.89 3.793.918 5.354c.219 1.274-.532 1.82-1.676 1.218L12 18.33l-4.808 2.528c-1.145.602-1.896.056-1.677-1.218z"
+                  fill-rule="evenodd"
+                />
+              </svg>
+            </span>收藏
+          </button>
+          <button
+            type="button"
+            class="Button ContentItem-action Button--plain Button--withIcon Button--withLabel"
+          >
+            <span style="display: inline-flex; align-items: center;">
+              ​
+              <svg
+                class="Zi Zi--Heart Button-zi"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+                width="1.2em"
+                height="1.2em"
+              >
+                <path
+                  d="M2 8.437C2 5.505 4.294 3.094 7.207 3 9.243 3 11.092 4.19 12 6c.823-1.758 2.649-3 4.651-3C19.545 3 22 5.507 22 8.432 22 16.24 13.842 21 12 21 10.158 21 2 16.24 2 8.437z"
+                  fill-rule="evenodd"
+                />
+              </svg>
+            </span>喜欢
+          </button>
+          <button
+            @click="showMore(i)"
+            data-zop-retract-question="true"
+            type="button"
+            class="Button ContentItem-action ContentItem-rightButton Button--plain"
+          >
+            <span class="RichContent-collapsedText">收起/展开</span>
+            <span style="display: inline-flex; align-items: center;">
+              ​
+              <svg
+                class="Zi Zi--ArrowDown ContentItem-arrowIcon is-active"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+                width="24"
+                height="24"
+              >
+                <path
+                  d="M12 13L8.285 9.218a.758.758 0 0 0-1.064 0 .738.738 0 0 0 0 1.052l4.249 4.512a.758.758 0 0 0 1.064 0l4.246-4.512a.738.738 0 0 0 0-1.052.757.757 0 0 0-1.063 0L12.002 13z"
+                  fill-rule="evenodd"
+                />
+              </svg>
+            </span>
+          </button>
+        </div>
+      </div>
+      <div class="Comments-container" v-if="v.commentList.length > 0">
+        <div class="CommentsV2 CommentsV2--withEditor CommentsV2-withPagination">
+          <div class="Topbar CommentTopbar">
+            <div class="Topbar-title">
+              <h2 class="CommentTopbar-title">11 条评论</h2>
+            </div>
+            <div class="Topbar-options">
+              <button type="button" class="Button Button--plain Button--withIcon Button--withLabel">
+                <span style="display: inline-flex; align-items: center;">​
+                  <svg
+                    class="Zi Zi--Switch Button-zi"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                    width="1.2em"
+                    height="1.2em"
+                  >
+                    <path
+                      d="M13.004 7V4.232c0-.405.35-.733.781-.733.183 0 .36.06.501.17l6.437 5.033c.331.26.376.722.1 1.033a.803.803 0 0 1-.601.264H2.75a.75.75 0 0 1-.75-.75V7.75A.75.75 0 0 1 2.75 7h10.254zm-1.997 9.999v2.768c0 .405-.35.733-.782.733a.814.814 0 0 1-.5-.17l-6.437-5.034a.702.702 0 0 1-.1-1.032.803.803 0 0 1 .6-.264H21.25a.75.75 0 0 1 .75.75v1.499a.75.75 0 0 1-.75.75H11.007z"
+                      fill-rule="evenodd"
+                    />
+                  </svg>
+                </span>切换为时间排序
+              </button>
+            </div>
+          </div>
+          <div>
+            <div class="CommentListV2">
+              <ul class="NestComment" v-for="j in v.commentList">
+                <li class="NestComment--rootComment">
+                  <div class="CommentItemV2">
+                    <div>
+                      <div class="CommentItemV2-meta">
+                        <span class="UserLink CommentItemV2-avatar">
+                          <div class="Popover">
+                            <div
+                              id="Popover172-toggle"
+                              aria-haspopup="true"
+                              aria-expanded="false"
+                              aria-owns="Popover172-content"
+                            >
+                              <a
+                                target="_blank"
+                                class="UserLink-link"
+                                data-za-detail-view-element_name="User"
+                              >
+                                <img
+                                  class="Avatar UserLink-avatar"
+                                  width="24"
+                                  height="24"
+                                  :src="j.author.member.avatar_url"
+                                  :alt="j.author.member.name"
+                                />
+                              </a>
+                            </div>
+                          </div>
+                        </span>
+                        <span class="UserLink">
+                          <a
+                            target="_blank"
+                            class="UserLink-link"
+                            data-za-detail-view-element_name="User"
+                            :href="`www.zhihu.com/people/${j.author.url_token}`"
+                          >{{j.author.member.name}}</a>
+                        </span>
+                        <span class="CommentItemV2-time">
+                          {{createdTime(v.created_time)}}
+                        </span>
+                      </div>
+                      <div class="CommentItemV2-metaSibling">
+                        <div class="CommentRichText CommentItemV2-content">
+                          <div
+                            class="RichText ztext css-hnrfcf"
+                            options="[object Object]"
+                          >{{j.content}}</div>
+                        </div>
+                        <div class="CommentItemV2-footer">
+                          <button type="button" class="Button CommentItemV2-likeBtn Button--plain">
+                            <span style="display: inline-flex; align-items: center;">
+                              ​
+                              <svg
+                                class="Zi Zi--Like"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                                width="16"
+                                height="16"
+                                style="margin-right: 5px;"
+                              >
+                                <path
+                                  d="M14.445 9h5.387s2.997.154 1.95 3.669c-.168.51-2.346 6.911-2.346 6.911s-.763 1.416-2.86 1.416H8.989c-1.498 0-2.005-.896-1.989-2v-7.998c0-.987.336-2.032 1.114-2.639 4.45-3.773 3.436-4.597 4.45-5.83.985-1.13 3.2-.5 3.037 2.362C15.201 7.397 14.445 9 14.445 9zM3 9h2a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V10a1 1 0 0 1 1-1z"
+                                  fill-rule="evenodd"
+                                />
+                              </svg>
+                            </span>{{j.vote_count || 0}}
+                          </button>
+                          <button type="button" class="Button CommentItemV2-hoverBtn Button--plain">
+                            <span style="display: inline-flex; align-items: center;">
+                              ​
+                              <svg
+                                class="Zi Zi--Reply"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                                width="16"
+                                height="16"
+                                style="margin-right: 5px;"
+                              >
+                                <path
+                                  d="M22.959 17.22c-1.686-3.552-5.128-8.062-11.636-8.65-.539-.053-1.376-.436-1.376-1.561V4.678c0-.521-.635-.915-1.116-.521L1.469 10.67a1.506 1.506 0 0 0-.1 2.08s6.99 6.818 7.443 7.114c.453.295 1.136.124 1.135-.501V17a1.525 1.525 0 0 1 1.532-1.466c1.186-.139 7.597-.077 10.33 2.396 0 0 .396.257.536.257.892 0 .614-.967.614-.967z"
+                                  fill-rule="evenodd"
+                                />
+                              </svg>
+                            </span>回复
+                          </button>
+                          <button type="button" class="Button CommentItemV2-hoverBtn Button--plain">
+                            <span style="display: inline-flex; align-items: center;">
+                              ​
+                              <svg
+                                class="Zi Zi--Like"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                                width="16"
+                                height="16"
+                                style="transform: rotate(180deg); margin-right: 5px;"
+                              >
+                                <path
+                                  d="M14.445 9h5.387s2.997.154 1.95 3.669c-.168.51-2.346 6.911-2.346 6.911s-.763 1.416-2.86 1.416H8.989c-1.498 0-2.005-.896-1.989-2v-7.998c0-.987.336-2.032 1.114-2.639 4.45-3.773 3.436-4.597 4.45-5.83.985-1.13 3.2-.5 3.037 2.362C15.201 7.397 14.445 9 14.445 9zM3 9h2a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V10a1 1 0 0 1 1-1z"
+                                  fill-rule="evenodd"
+                                />
+                              </svg>
+                            </span>踩
+                          </button>
+                          <button type="button" class="Button CommentItemV2-hoverBtn Button--plain">
+                            <span style="display: inline-flex; align-items: center;">
+                              ​
+                              <svg
+                                class="Zi Zi--Report"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                                width="14"
+                                height="14"
+                              >
+                                <path
+                                  d="M19.947 3.129c-.633.136-3.927.639-5.697.385-3.133-.45-4.776-2.54-9.949-.888-.997.413-1.277 1.038-1.277 2.019L3 20.808c0 .3.101.54.304.718a.97.97 0 0 0 .73.304c.275 0 .519-.102.73-.304.202-.179.304-.418.304-.718v-6.58c4.533-1.235 8.047.668 8.562.864 2.343.893 5.542.008 6.774-.657.397-.178.596-.474.596-.887V3.964c0-.599-.42-.972-1.053-.835z"
+                                  fill-rule="evenodd"
+                                />
+                              </svg>
+                            </span> 举报
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+                <li class="NestComment--child" v-for="k in j.child_comments">
+                  <div class="CommentItemV2">
+                    <div>
+                      <div class="CommentItemV2-meta">
+                        <span class="UserLink CommentItemV2-avatar">
+                          <div class="Popover">
+                            <div
+                              id="Popover173-toggle"
+                              aria-haspopup="true"
+                              aria-expanded="false"
+                              aria-owns="Popover173-content"
+                            >
+                              <a
+                                target="_blank"
+                                class="UserLink-link"
+                                data-za-detail-view-element_name="User"
+                                href="//www.zhihu.com/people/michael-sky-96"
+                              >
+                                <img
+                                  class="Avatar UserLink-avatar"
+                                  width="24"
+                                  height="24"
+                                  :src="k.author.member.avatar_url"
+                                  :alt="k.author.member.name"
+                                />
+                              </a>
+                            </div>
+                          </div>
+                        </span>
+                        <span class="UserLink">
+                          <a
+                            target="_blank"
+                            class="UserLink-link"
+                            data-za-detail-view-element_name="User"
+                            href="//www.zhihu.com/people/michael-sky-96"
+                          >{{k.author.member.name}}</a>
+                        </span>
+                        <span class="CommentItemV2-reply">回复</span>
+                        <span class="UserLink">
+                          <a
+                            target="_blank"
+                            class="UserLink-link"
+                            data-za-detail-view-element_name="User"
+                            href="//www.zhihu.com/people/ba-ling-liu-se-77"
+                          >{{k.reply_to_author.member.name}}</a>
+                        </span>
+                        <span class="CommentItemV2-time">{{k.created_time}}</span>
+                      </div>
+                      <div class="CommentItemV2-metaSibling">
+                        <div class="CommentRichText CommentItemV2-content">
+                          <div class="RichText ztext css-hnrfcf" options="[object Object]">
+                            {{k.content}}
+                          </div>
+                        </div>
+                        <div class="CommentItemV2-footer">
+                          <button type="button" class="Button CommentItemV2-likeBtn Button--plain">
+                            <span style="display: inline-flex; align-items: center;">
+                              ​
+                              <svg
+                                class="Zi Zi--Like"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                                width="16"
+                                height="16"
+                                style="margin-right: 5px;"
+                              >
+                                <path
+                                  d="M14.445 9h5.387s2.997.154 1.95 3.669c-.168.51-2.346 6.911-2.346 6.911s-.763 1.416-2.86 1.416H8.989c-1.498 0-2.005-.896-1.989-2v-7.998c0-.987.336-2.032 1.114-2.639 4.45-3.773 3.436-4.597 4.45-5.83.985-1.13 3.2-.5 3.037 2.362C15.201 7.397 14.445 9 14.445 9zM3 9h2a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V10a1 1 0 0 1 1-1z"
+                                  fill-rule="evenodd"
+                                />
+                              </svg>
+                            </span>赞
+                          </button>
+                          <button type="button" class="Button CommentItemV2-hoverBtn Button--plain">
+                            <span style="display: inline-flex; align-items: center;">
+                              ​
+                              <svg
+                                class="Zi Zi--Reply"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                                width="16"
+                                height="16"
+                                style="margin-right: 5px;"
+                              >
+                                <path
+                                  d="M22.959 17.22c-1.686-3.552-5.128-8.062-11.636-8.65-.539-.053-1.376-.436-1.376-1.561V4.678c0-.521-.635-.915-1.116-.521L1.469 10.67a1.506 1.506 0 0 0-.1 2.08s6.99 6.818 7.443 7.114c.453.295 1.136.124 1.135-.501V17a1.525 1.525 0 0 1 1.532-1.466c1.186-.139 7.597-.077 10.33 2.396 0 0 .396.257.536.257.892 0 .614-.967.614-.967z"
+                                  fill-rule="evenodd"
+                                />
+                              </svg>
+                            </span>回复
+                          </button>
+                          <button type="button" class="Button CommentItemV2-hoverBtn Button--plain">
+                            <span style="display: inline-flex; align-items: center;">
+                              ​
+                              <svg
+                                class="Zi Zi--Like"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                                width="16"
+                                height="16"
+                                style="transform: rotate(180deg); margin-right: 5px;"
+                              >
+                                <path
+                                  d="M14.445 9h5.387s2.997.154 1.95 3.669c-.168.51-2.346 6.911-2.346 6.911s-.763 1.416-2.86 1.416H8.989c-1.498 0-2.005-.896-1.989-2v-7.998c0-.987.336-2.032 1.114-2.639 4.45-3.773 3.436-4.597 4.45-5.83.985-1.13 3.2-.5 3.037 2.362C15.201 7.397 14.445 9 14.445 9zM3 9h2a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V10a1 1 0 0 1 1-1z"
+                                  fill-rule="evenodd"
+                                />
+                              </svg>
+                            </span>踩
+                          </button>
+                          <button type="button" class="Button CommentItemV2-hoverBtn Button--plain">
+                            <span style="display: inline-flex; align-items: center;">
+                              ​
+                              <svg
+                                class="Zi Zi--Report"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                                width="14"
+                                height="14"
+                              >
+                                <path
+                                  d="M19.947 3.129c-.633.136-3.927.639-5.697.385-3.133-.45-4.776-2.54-9.949-.888-.997.413-1.277 1.038-1.277 2.019L3 20.808c0 .3.101.54.304.718a.97.97 0 0 0 .73.304c.275 0 .519-.102.73-.304.202-.179.304-.418.304-.718v-6.58c4.533-1.235 8.047.668 8.562.864 2.343.893 5.542.008 6.774-.657.397-.178.596-.474.596-.887V3.964c0-.599-.42-.972-1.053-.835z"
+                                  fill-rule="evenodd"
+                                />
+                              </svg>
+                            </span> 举报
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import axios from 'axios'
-import { nextTick, computed, onMounted, ref, reactive, getCurrentInstance } from "vue"
+import {
+  nextTick,
+  computed,
+  onMounted,
+  ref,
+  reactive,
+  getCurrentInstance,
+} from 'vue'
 export default {
   setup(props) {
-    const qwe = ref('qweq')
-    const getZhiHu = async() => {
-    let config = {
-      method: 'get',
-      url: 'https://www.zhihu.com/api/v3/feed/topstory/recommend?session_token=b92e76f1d1ef60fd381853858680bfca&desktop=true&page_number=3&limit=6&action=down&after_id=11&ad_interval=-10',
-      headers: {
-        '': 'authority: www.zhihu.com, method: GET, path: /api/v3/feed/topstory/recommend?session_token=9f46c5c4363aac8ed925b0387e7d8bf8&desktop=true&page_number=2&limit=6&action=down&after_id=5&ad_interval=-10, scheme: https',
-        'accept': ' */*',
-        'accept-encoding': ' gzip, deflate, br',
-        'accept-language': ' zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7,zh-CN;q=0.6',
-        'cookie': ' _zap=1e7fce5e-2481-4429-9dd3-bdb8f08ca553; d_c0="AACaqW-DwBKPTkrFvb3sRuKyHf5zg4qu7Iw=|1614937002"; _xsrf=4LRYBnkBNfRSVM5JYQbmANr8V1hN91wc; __snaker__id=zAEvzKWIleoGpzG7; _9755xjdesxxd_=32; YD00517437729195%3AWM_TID=eRSVm4zjTjpAVVVFBEM6jP1yPS6Ob1DG; __utmv=51854390.100-1|2=registration_date=20150302=1^3=entry_date=20150302=1; q_c1=387577acb6fd4a79893de21e66fa92f3|1631170336000|1628241878000; __utma=51854390.518029118.1628241879.1631870076.1631929594.15; __utmz=51854390.1631929594.15.15.utmcsr=zhihu.com|utmccn=(referral)|utmcmd=referral|utmcct=/question/487561336; YD00517437729195%3AWM_NIKE=9ca17ae2e6ffcda170e2e6ee8cd859b0efb999f841fc968ba7c54a968b9f84f48092929caebc66f3b4b692db2af0fea7c3b92a8aad8ba4d180a7b496a3f56582afb7a8bc68e989ff82ed49f68ba283f35cf48dfd9ac2628c98aedaf750889bbf88d25da886fcafd652a7af9fb1f865a99ca385e25d9ceafba3d56d8288fba5f63ff2eba7a8db25b6bcbfbab574958ee1d1d83994b389b0fc478b8eababb27af5bc9caee96eb0ab8189b83ce997e596e75e8bec81b8d437e2a3; YD00517437729195%3AWM_NI=JsECRtelZBvoBqyG9l%2BW1anC6UnbpP0S3yCjHHb9tDDEqgSWdZ4NWZeqQPuokDmdcWX65BVgBX5Dw525iGX%2FvdqY6xWR%2F0U3PmGOyMIReJ3r7dTMjfluOh50%2BI%2BudVI4OWQ%3D; l_n_c=1; n_c=1; ref_source="other_https://www.zhihu.com/signin?next=/"; o_act=login; Hm_lvt_98beee57fd2ef70ccdd5ca52b9740c49=1632307534,1632360242,1632378293,1632379198; r_cap_id="NzIxMWUyMDZkZDg5NGQ2ZDlhNTcxYjdiNjE0MzFhNjQ=|1632381591|3b089b7efa5a951acaea9287307dce0e2b14d190"; cap_id="YmY4YTI1YjdkMzllNGRlYWJkYjNlYWI1MGZlODQ4ODA=|1632381591|e010505778e856cf5afc0a527f2ef800f9a64bcb"; l_cap_id="OGExYjdhZDQwMzUwNDYxMzg3YTExNDU4OTllMDg5OWY=|1632381591|b44dd08663f510d9a4c3b05f1712a5e4c7a5c2e5"; SESSIONID=4mFqIbrbFQm8c7wBaJVFPZ9suk7CMe1sQ967gGnokSl; osd=UFocBkhya84QU4S4UHX6Guuo229JRg2EZxvmwT41OqgkNrLPGe8tiHZSj79a4ZjYdRP4g6hETGog_RAZvO8Dgqk=; JOID=VF0UBEh2bMYSU4C_WHf6Huyg2W9NQQWGZx_hyTw1Pq8sNLLLHucviHJVh71a5Z_QdxP8hKBGTG4n9RIZuOgLgKk=; gdxidpyhxdE=1jYUJS4A27zZCUg2vcA%5CooZsTjuWG%2FpnrzAi7UC7j%2BiExsi8DcLWEYDpXVU8JybP%2BMpQqa3NIYnSb2DcOgNVa%2Bgqh88kmfMqbebAxt2%2BVQwP%2BBWSnB2WdAA6I96ldTa8L07A%5CAWUhxhq%5Cx8Z%2B89V74Sj%5CrSm%2BXVxXxZNBKfKC0DgXZvP%3A1632388379431; captcha_session_v2="2|1:0|10:1632387479|18:captcha_session_v2|88:ZzN6Wjd6eVhPOGg3Tk9RNGt6RkxHNUgzZzVhR0J4SVk1ZE9DTCtBSEE1TEtKUWJjVG1jbm5ZZlBkL3NCcmJCWQ==|61f4fb91c9ed37380fc7b889d236a74d5de418b8d28883b20a423bbc559045ef"; captcha_ticket_v2="2|1:0|10:1632387483|17:captcha_ticket_v2|704:eyJ2YWxpZGF0ZSI6IkNOMzFfTlhOUDg2Ymo3TmM1Y2JtN1ouXzVrbXdmRWdCY1JpbDlLSDVWUEFhVkhmYm1nZGQ1R0Z3WS1ub241UFo4OFNlZWM1ME5ibzFfNFMueXgyOEs4OEllOWZOU0d2VUhVakpGb0tBWDRod3BoU01OYTd4MVNGRHNQTy1iYkF2ZWdsUGpsem1qVGRSV3BZLUZWTXl6TERBZ1RwUDZZWHdvUWpsUTdHaGxBUk1HdHFTcGY1VFcyMS1Jb0R5SnRsU0ZBcGtKTmRQU3laaGhwQlRSNkZnVk9VOVdPX0ctQWxuS21ybzR5NHkxTDZXYkNNZFdITVc5Z1AwMFp1VnotLUY0c0lYelhydXJ5WjFkWXVHWmZqaDBmeGtvRk85U2dxZWktRXFjd2t6MnlLQXNiaTY5dUF1THloVV96cWY4NldxLm42aXlDc3loaHZnOV9yNGcuTHB3dnV2SVlNNEpKNEQ3ODBLNVpULkVfbC4yYkhvUGQ0UkF5bHZBNFJSOTVyWkdJWlprUzI0ZGluLU8xWXp1T1pxeVNpd0dvbGVmci5nTVVvRm92Q3N0Z1JsOWpRTFN5c3Qwakp1UVAtXzhMZl9BZmx0NENkT25QOWpncnh0bkFaWFg4Z2NXbzFDbjVhUWNxdzY2UlVoYzBYeWRwYUkyT3dyUnJPUk9FRGJzUlpBMyJ9|bb7950f98b316988f86f82884e92fe72a78858f738685faf379766f7ce1003d2"; z_c0="2|1:0|10:1632387484|4:z_c0|92:Mi4xZmpZQkFRQUFBQUFBQUpxcGI0UEFFaVlBQUFCZ0FsVk5uSTg1WWdBRnNMWV94LXI0Z05wZXZtbGhZY1NUWHZtZlRn|0db746a98a9c396120c4152798099c556b4388f9c5ac9c3c03ca364e6f9ca252"; Hm_lpvt_98beee57fd2ef70ccdd5ca52b9740c49=1632388177; tst=r; KLBRSID=4efa8d1879cb42f8c5b48fe9f8d37c16|1632389116|1632377770; KLBRSID=4efa8d1879cb42f8c5b48fe9f8d37c16|1632389138|1632377770',
-        'referer': ' https://www.zhihu.com/',
-        'sec-ch-ua': ' "Google Chrome";v="93", " Not;A Brand";v="99", "Chromium";v="93"',
-        'sec-ch-ua-mobile': ' ?0',
-        'sec-ch-ua-platform': ' "Windows"',
-        'sec-fetch-dest': ' empty',
-        'sec-fetch-mode': ' cors',
-        'sec-fetch-site': ' same-origin',
-        'user-agent': ' Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36',
-        'x-ab-param': ' tp_zrec=1;qap_question_visitor= 0;pf_noti_entry_num=2;se_ffzx_jushen1=0;tp_topic_style=0;tp_dingyue_video=0;qap_question_author=0;zr_slotpaidexp=1;tp_contents=1;zr_expslotpaid=3;top_test_4_liguangyi=1;pf_adjust=1',
-        'x-ab-pb': ' CrQBnwJCBOwKEgUyBdwLCgT2AqAD4AtXAwsEbAQOBfgDKgSbCyoC0QRFBTQMjgN1BDcMbAPgBBEFVgwBCxsAhAK3A1ADUgu0ALkCPwUyA/MDDwvoAxUF1wuMAswCBwy1C2oB1wLMBOkEKQXjBPQLYAtpAcEEiQwzBUcAdAHWBNgC9wM0BNoEzwu0Cj8AOwJ9AuQKogMUBccCVwThBMoCTwNkBEABpgRDABkFoQP0AzMERQRyA+EDEloCAAEAAAABAAAAAAABAAEAAAAFAAABAQEBAAABAQAAAAABABUAAAABAgEAAAABAwAAAAEAAgAAAAEAAAAAAAABAAELAAACAQAAAAABAQAAAQEAFQAAAAAAAQI=',
-        'x-api-version': ' 3.0.53',
-        'x-requested-with': ' fetch',
-        'x-zse-93': ' 101_3_2.0',
-        'x-zse-96': ' 2.0_aLFqFUL0e82xUwN0m0F8gq98FGYxe8S8BTS8QAH8NBxf'
-      }
+    const page_number = ref(1)
+    const limit = ref(40)
+    const list = ref([])
+    const createdTime = (val) => {
+      return new Date(parseInt(val) * 1000).toLocaleString().replace(/:\d{1,2}$/,' ');
     }
-    axios(config)
-    .then(function (response) {
-      console.log(JSON.stringify(response.data));
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
-
+    const getZhiHu = async () => {
+      let data = await axios({
+        method: 'get',
+        url: 'http://localhost:3000/',
+        params: {
+          page_number: page_number.value,
+          limit: limit.value,
+        },
+      })
+      let arr =  data.data.map((v) => {
+        v.isShowMore = false
+        v.commentList = []
+        return v
+      })
+      list.value = [...list.value, ...arr]
+    }
+    const showMore = (i) => {
+      list.value[i].isShowMore = !list.value[i].isShowMore
+    }
+    const showComment = async (id) => {
+      let data = await axios({
+        method: 'get',
+        url: 'http://localhost:3000/comment',
+        params: {
+          id
+        },
+      })
+      list.value.map(v => {
+        if (v.target.id === id && v.commentList.length <= 0) {
+          v.commentList = data.data.data
+        } else {
+          v.commentList = []
+        }
+      })
     }
     onMounted(() => {
       getZhiHu()
+      nextTick(() => {
+        window.addEventListener('scroll',() => {
+          let H = document.querySelector('#app').offsetHeight
+          let Y = window.scrollY
+          let h = window.innerHeight
+          console.log(H, Y, h);
+          if (H - Y - h < 200) {
+            page_number.value++
+            getZhiHu()
+          }
+        })
+      })
     })
     return {
-      qwe
+      list,
+      createdTime,
+      showMore,
+      showComment
+    }
+  },
+}
+</script>
+<style scoped lang="scss">
+body {
+  font-family: -apple-system, BlinkMacSystemFont, Helvetica Neue, PingFang SC,
+    Microsoft YaHei, Source Han Sans SC, Noto Sans CJK SC, WenQuanYi Micro Hei,
+    sans-serif;
+  font-size: 15px;
+  background: #f6f6f6;
+  color: #121212;
+}
+.wrap {
+  position: relative;
+  padding: 0 16px;
+  margin: 10px auto;
+  width: 694px;
+  box-shadow: 0 1px 3px rgb(18 18 18 / 10%);
+  background: #fff;
+  .list {
+    margin-bottom: 10px;
+    overflow: hidden;
+    border-radius: 2px;
+    border-bottom: 1px solid #f0f2f7;
+    box-sizing: border-box;
+    padding: 20px;
+  }
+  .title {
+    line-height: 1.6;
+    color: #121212;
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .content {
+    cursor: pointer;
+    -webkit-transition: color 0.14s ease-out;
+    transition: color 0.14s ease-out;
+    word-break: break-word;
+    line-height: 1.6;
+    margin-top: 9px;
+    margin-bottom: -4px;
+    button {
+      padding: 0;
+      margin-left: 4px;
+      color: #175199;
+    }
+  }
+  .ContentItem-actions {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    margin: 0 -20px -10px;
+    color: #646464;
+    .VoteButton {
+      padding: 0 10px;
+      color: #06f;
+    }
+    .VoteButton--down {
+      margin-left: 4px;
+    }
+    .Button--plain {
+      height: auto;
+      padding: 0;
+      line-height: inherit;
+      background-color: transparent;
+      border: none;
+      border-radius: 0;
+    }
+    .ContentItem-action {
+      margin-left: 24px;
+      font-size: 14px;
+    }
+    .ContentItem-rightButton {
+      margin-left: auto;
+    }
+    .ContentItem-action {
+      font-size: 14px;
     }
   }
 }
-</script>
+</style>
