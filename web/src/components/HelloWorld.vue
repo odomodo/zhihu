@@ -495,7 +495,6 @@ export default {
           let H = document.querySelector('#app').offsetHeight
           let Y = window.scrollY
           let h = window.innerHeight
-          console.log(H, Y, h);
           if (H - Y - h < 200) {
             page_number.value++
             getZhiHu()
